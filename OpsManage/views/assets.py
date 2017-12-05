@@ -2,8 +2,7 @@
 # _#_ coding:utf-8 _*_  
 import os,xlrd,json
 from django.http import JsonResponse
-from django.shortcuts import render_to_response,HttpResponseRedirect
-from django.template import RequestContext
+from django.shortcuts import render,HttpResponseRedirect
 from django.contrib.auth.decorators import login_required
 from OpsManage.models import *
 from django.db.models import Count
@@ -11,6 +10,7 @@ from OpsManage.utils.ansible_api_v2 import ANSRunner
 from django.contrib.auth.models import Group
 from OpsManage.tasks import recordAssets
 from django.contrib.auth.decorators import permission_required
+from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 
 def getBaseAssets():
     try:
@@ -39,15 +39,15 @@ def getBaseAssets():
 @login_required(login_url='/login')
 @permission_required('OpsManage.can_read_assets',login_url='/noperm/') 
 def assets_config(request):
-    return render_to_response('assets/assets_config.html',{"user":request.user,"baseAssets":getBaseAssets()},
-                              context_instance=RequestContext(request))
+    return render(request,'assets/assets_config.html',{"user":request.user,"baseAssets":getBaseAssets()},
+                              )
     
 @login_required(login_url='/login')
 @permission_required('OpsManage.can_add_assets',login_url='/noperm/') 
 def assets_add(request):
     if request.method == "GET":
-        return render_to_response('assets/assets_add.html',{"user":request.user,"baseAssets":getBaseAssets()},
-                                  context_instance=RequestContext(request))      
+        return render(request,'assets/assets_add.html',{"user":request.user,"baseAssets":getBaseAssets()},
+                                  )      
     
 @login_required(login_url='/login')
 @permission_required('OpsManage.can_read_assets',login_url='/noperm/') 
@@ -57,11 +57,11 @@ def assets_list(request):
     assetOffline = Assets.objects.filter(status=1).count()
     assetMaintain = Assets.objects.filter(status=2).count()
     assetsNumber = Assets.objects.values('assets_type').annotate(dcount=Count('assets_type'))
-    return render_to_response('assets/assets_list.html',{"user":request.user,"totalAssets":assetsList.count(),
+    return render(request,'assets/assets_list.html',{"user":request.user,"totalAssets":assetsList.count(),
                                                          "assetOnline":assetOnline,"assetOffline":assetOffline,
                                                          "assetMaintain":assetMaintain,"baseAssets":getBaseAssets(),
                                                          "assetsList":assetsList,"assetsNumber":assetsNumber},
-                              context_instance=RequestContext(request))
+                              )
 
 @login_required(login_url='/login')
 @permission_required('OpsManage.can_read_assets',login_url='/noperm/') 
@@ -69,8 +69,8 @@ def assets_view(request,aid):
     try:
         assets = Assets.objects.get(id=aid)
     except:
-        return render_to_response('404.html',{"user":request.user},
-                                context_instance=RequestContext(request))  
+        return render(request,'404.html',{"user":request.user},
+                                )  
     if assets.assets_type == 'server':
         try:
             asset_ram = assets.ram_assets_set.all()
@@ -83,23 +83,23 @@ def assets_view(request,aid):
         try:
             asset_body = assets.server_assets                    
         except:
-            return render_to_response('assets/assets_view.html',{"user":request.user},
-                            context_instance=RequestContext(request)) 
-        return render_to_response('assets/assets_view.html',{"user":request.user,"asset_type":assets.assets_type,
+            return render(request,'assets/assets_view.html',{"user":request.user},
+                            ) 
+        return render(request,'assets/assets_view.html',{"user":request.user,"asset_type":assets.assets_type,
                                                             "asset_main":assets,"asset_body":asset_body,
                                                             "asset_ram":asset_ram,"asset_disk":asset_disk,
                                                             "baseAssets":getBaseAssets()},
-                            context_instance=RequestContext(request))   
+                            )   
     else:
         try:
             asset_body = assets.network_assets
         except:
-            return render_to_response('assets/assets_view.html',{"user":request.user},
-                            context_instance=RequestContext(request))                 
-        return render_to_response('assets/assets_view.html',{"user":request.user,"asset_type":assets.assets_type,
+            return render(request,'assets/assets_view.html',{"user":request.user},
+                            )                 
+        return render(request,'assets/assets_view.html',{"user":request.user,"asset_type":assets.assets_type,
                                                             "asset_main":assets,"asset_body":asset_body,
                                                             "baseAssets":getBaseAssets()},
-                            context_instance=RequestContext(request))  
+                            )  
              
 @login_required(login_url='/login')
 @permission_required('OpsManage.can_change_assets',login_url='/noperm/') 
@@ -107,8 +107,8 @@ def assets_modf(request,aid):
     try:
         assets = Assets.objects.get(id=aid)
     except:
-        return render_to_response('assets/assets_modf.html',{"user":request.user},
-                                context_instance=RequestContext(request))  
+        return render(request,'assets/assets_modf.html',{"user":request.user},
+                                )  
     if assets.assets_type == 'server':
         try:
             asset_ram = assets.ram_assets_set.all()
@@ -121,23 +121,23 @@ def assets_modf(request,aid):
         try:
             asset_body = assets.server_assets                    
         except:
-            return render_to_response('404.html',{"user":request.user},
-                            context_instance=RequestContext(request))         
-        return render_to_response('assets/assets_modf.html',{"user":request.user,"asset_type":assets.assets_type,
+            return render(request,'404.html',{"user":request.user},
+                            )         
+        return render(request,'assets/assets_modf.html',{"user":request.user,"asset_type":assets.assets_type,
                                                             "asset_main":assets,"asset_body":asset_body,
                                                             "asset_ram":asset_ram,"asset_disk":asset_disk,
                                                             "assets_data":getBaseAssets()},
-                            context_instance=RequestContext(request))    
+                            )    
     else:     
         try:
             asset_body = assets.network_assets
         except:
-            return render_to_response('assets/assets_modf.html',{"user":request.user},   
-                                      context_instance=RequestContext(request))                                                 
-        return render_to_response('assets/assets_modf.html',{"user":request.user,"asset_type":assets.assets_type,
+            return render(request,'assets/assets_modf.html',{"user":request.user},   
+                                      )                                                 
+        return render(request,'assets/assets_modf.html',{"user":request.user,"asset_type":assets.assets_type,
                                                             "asset_main":assets,"asset_body":asset_body,
                                                             "assets_data":getBaseAssets()},
-                            context_instance=RequestContext(request))  
+                            )  
         
 @login_required(login_url='/login')
 @permission_required('OpsManage.can_change_server_assets',login_url='/noperm/') 
@@ -374,13 +374,13 @@ def assets_search(request):
         selinuxList = [  m.selinux for m in Assets.objects.raw('SELECT id,selinux from opsmanage_server_assets WHERE selinux is not null GROUP BY selinux')]
         systemList = [  m.system for m in Assets.objects.raw('SELECT id,system from opsmanage_server_assets WHERE system is not null GROUP BY system')]    
         kernelList = [  m.kernel for m in Assets.objects.raw('SELECT id,kernel from opsmanage_server_assets WHERE kernel is not null GROUP BY kernel')]   
-        return render_to_response('assets/assets_search.html',{"user":request.user,"baseAssets":getBaseAssets(),
+        return render(request,'assets/assets_search.html',{"user":request.user,"baseAssets":getBaseAssets(),
                                                                "manufacturerList":manufacturerList,"modelList":modelList,
                                                                "providerList":providerList,"cpuList":cpuList,
                                                                "buyUserList":buyUserList,"selinuxList":selinuxList,
                                                                "systemList":systemList,'kernelList':kernelList,
                                                              },
-                                  context_instance=RequestContext(request)) 
+                                  ) 
     elif request.method == "POST":  
         AssetIntersection = list(set(request.POST.keys()).intersection(set(AssetFieldsList)))
         ServerAssetIntersection = list(set(request.POST.keys()).intersection(set(ServerAssetFieldsList)))
@@ -540,8 +540,15 @@ def assets_search(request):
         return JsonResponse({'msg':"数据查询成功","code":200,'data':dataList,'count':0})     
     
 @login_required(login_url='/login')  
-def assets_log(request):
+def assets_log(request,page):
     if request.method == "GET":
-        assetsList = Log_Assets.objects.all().order_by('-id')[0:120]
-        return render_to_response('assets/assets_log.html',{"user":request.user,"assetsList":assetsList},
-                                  context_instance=RequestContext(request))
+        allAssetsList = Log_Assets.objects.all().order_by('-id')[0:1000]
+        paginator = Paginator(allAssetsList, 25)          
+        try:
+            assetsList = paginator.page(page)
+        except PageNotAnInteger:
+            assetsList = paginator.page(1)
+        except EmptyPage:
+            assetsList = paginator.page(paginator.num_pages)        
+        return render(request,'assets/assets_log.html',{"user":request.user,"assetsList":assetsList},
+                                  )

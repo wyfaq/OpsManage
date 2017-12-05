@@ -13,6 +13,7 @@
 
     <!-- jQuery -->
     <script src="/static/vendor/jquery/jquery.min.js"></script>
+    
     <!-- Bootstrap Core CSS -->
     <link href="/static/vendor/bootstrap/css/bootstrap.min.css" rel="stylesheet">
 
@@ -68,15 +69,29 @@
     <!-- Datetimepicker -->
     <link rel="stylesheet" href="/static/dist/css/bootstrap-datetimepicker.min.css" type="text/css"/>
     <script type="text/javascript" src="/static/js/bootstrap-datetimepicker.js"></script> 
-    
-    
-    
-  <link rel="stylesheet" href="/static/dist/css/jquery-ui.min.css">
-  <script src="/static/dist/js/jquery-ui.min.js"></script>
-
-  <!-- DataTables JavaScript -->
-  <link rel="stylesheet" href="/static/dist/css/jquery.dataTables.min.css">
-  <script src="/static/js/jquery.dataTables.min.js"></script>
+    {% block ace-content %}
+	
+    {% endblock %}
+  	<!-- DataTables JavaScript -->
+  	<link rel="stylesheet" href="/static/dist/css/jquery.dataTables.min.css">
+  	<script src="/static/js/jquery.dataTables.min.js"></script>
+	<style type="text/css">
+	 	pre {
+	 		overflow: auto;
+	 		white-space: normal;
+	 		white-space: pre-wrap;       /* css-3 */
+	 		white-space: -moz-pre-wrap;  /* Mozilla, since 1999 */
+	 		white-space: -pre-wrap;      /* Opera 4-6 */
+	 		white-space: -o-pre-wrap;    /* Opera 7 */
+	 		word-wrap: break-word;       /* Internet Explorer 5.5+ */
+	 		border:1px solid #ccc;
+	 		padding:5px;
+	 		margin:10px;
+	 		font-family: Consolas,monospace;
+	 		color:#ADFF2F;
+	 		background-color:#000000;
+	 	}  
+	</style>	
 
 </head>
 
@@ -162,7 +177,7 @@
                                     <a href="/assets_search/">资产查询</a>
                                 </li>                                    
 								<li>
-	                                    <a href="/assets_log/">操作日志</a>
+	                                <a href="/assets_log/1/">操作日志</a>
 	                            </li>                                                        
                             </ul>
                             <!-- /.nav-second-level -->
@@ -177,10 +192,10 @@
                                     <a href="/deploy_list">项目列表</a>
                                 </li>
                                 <li>
-                                    <a href="/deploy_order/">部署工单</a>
+                                    <a href="/deploy_order/1/">部署工单</a>
                                 </li> 
 								<li>
-	                                <a href="/deploy_log">操作日志</a>
+	                                <a href="/deploy_log/1/">操作日志</a>
 	                            </li>                                 
                             </ul>
                             <!-- /.nav-second-level -->
@@ -195,10 +210,10 @@
                                     <a href="/cron_config">批量导入</a>
                                 </li>
                                 <li>
-                                    <a href="/cron_list">任务列表</a>
+                                    <a href="/cron_list/1/">任务列表</a>
                                 </li>
 								<li>
-	                                 <a href="/cron_log/">操作日志</a>
+	                                 <a href="/cron_log/1/">操作日志</a>
 	                            </li>                                 
                             </ul>
                             <!-- /.nav-second-level -->
@@ -213,8 +228,11 @@
                                     <a href="#">剧本配置<span class="fa arrow"></span></a>
                                     <ul class="nav nav-third-level">
                                         <li>
-                                            <a href="/apps/playbook/add/">剧本添加</a>
+                                            <a href="/apps/playbook/upload/">上传剧本</a>
                                         </li>
+                                        <li>
+                                            <a href="/apps/playbook/online/">在线编辑</a>
+                                        </li>                                        
                                         <li>
                                             <a href="/apps/">剧本列表</a>
                                         </li>
@@ -297,7 +315,7 @@
                                 </div>
                             </div>
                         </div>
-                        <a href="/deploy_order">
+                        <a href="/deploy_order/1/">
                             <div class="panel-footer">
                                 <span class="pull-left">查看所有</span>
                                 <span class="pull-right"><i class="fa fa-arrow-circle-right"></i></span>
@@ -319,7 +337,7 @@
                                 </div>
                             </div>
                         </div>
-                        <a href="/cron_list">
+                        <a href="/cron_list/1/">
                             <div class="panel-footer">
                                 <span class="pull-left">查看所有</span>
                                 <span class="pull-right"><i class="fa fa-arrow-circle-right"></i></span>
@@ -589,7 +607,7 @@
 
                             </div>
                             <!-- /.list-group -->
-                            <a href="/assets_log/" class="btn btn-default btn-block">查看操作记录</a>
+                            <a href="/assets_log/1/" class="btn btn-default btn-block">查看操作记录</a>
                         </div>
                         <!-- /.panel-body -->
                     </div>
