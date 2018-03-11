@@ -35,7 +35,7 @@
 				                                    	<th class="text-center">操作内容</th>
 				                                    	<th class="text-center">操作用户</th>
 														<th class="text-center">操作时间</th>
-				                                        {% if perms.opsmanage_log_project_config.delete_log_project_config %}
+				                                        {% if perms.OpsManage.delete_log_project_config %}
 				                                        	<th class="text-center">操作</th>
 				                                        {% endif %}														
 				                                    </tr>
@@ -46,13 +46,13 @@
 				                                			<td class="text-center">{{ds.project_name}} </td>
 				                                			<td class="text-center">
 				                                			{% if ds.project_branch %}
-				                                				{{ds.project_branch|slice:":7" }} 			                                								                                			
+				                                				<a href="javascript:;" target="_blank" class="tooltip-test" data-toggle="tooltip" title="{{ds.project_branch}}">{{ds.project_branch|slice:":13" }}...</a>		                                								                                			
 				                                			{% endif %}
 				                                			</td>
 				                                			<td class="text-center">{{ds.project_content}} </td>
 				                                			<td class="text-center">{{ds.project_user}} </td>				                                			
 				                                			<td class="text-center">{{ds.create_time|date:"Y/m/d H:i  "}} </td>
-				                                			{% if perms.opsmanage_log_project_config.delete_log_project_config %}
+				                                			{% if perms.OpsManage.delete_log_project_config %}
 					                                			<td class="text-center">
 					                                				<a href="javascript:" onclick="deleteDeployLogs(this,{{ds.id}})">
 						                                				<button class="btn btn-danger btn-xs">					                                					

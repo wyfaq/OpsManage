@@ -160,7 +160,7 @@
 								         	{% endif %} 
 								         	</td> 
                                 			<td class="text-center">
-                                				{{ds.order_project.project_name}} 
+                                				{{ds.order_project.project.project_name}} 
                                 			</td>
                                 			<td class="text-center">
                                 				{% if ds.order_comid %}
@@ -285,6 +285,7 @@
 					      success:function(response){			            
 				                if (response["code"]=="200"){ 
 				                	window.wxc.xcConfirm(response["msg"], window.wxc.xcConfirm.typeEnum.success);
+				                	location.reload();
 				                }
 					        	else{
 					        		window.wxc.xcConfirm(response["msg"], window.wxc.xcConfirm.typeEnum.error);
@@ -321,6 +322,7 @@
 					      success:function(response){	
 				                if (response["code"]=="200"){ 
 				                	window.wxc.xcConfirm(response["msg"], window.wxc.xcConfirm.typeEnum.success);
+				                	location.reload();
 				                }
 					        	else{
 					        		window.wxc.xcConfirm("撤销失败：" + response["msg"], window.wxc.xcConfirm.typeEnum.error);

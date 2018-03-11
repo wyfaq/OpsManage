@@ -68,7 +68,7 @@
                     <span class="icon-bar"></span>
                     <span class="icon-bar"></span>
                 </button>
-                <a class="navbar-brand" href="index.html">OpsManage v1.0</a>
+                <a class="navbar-brand" href="index.html">OpsManage v2.0</a>
             </div>
             <!-- /.navbar-header -->
 
@@ -121,7 +121,7 @@
                             <a href="/"><i class="fa fa-dashboard fa-fw"></i> Dashboard</a>
                         </li>
                         <li>
-                            <a href="#"><i class="fa fa-database fa-fw"></i> 资产管理<span class="fa arrow"></span></a>
+                            <a href="#"><i class="fa  fa-bank fa-fw"></i> 资产管理<span class="fa arrow"></span></a>
                             <ul class="nav nav-second-level">
                                 <li>
                                     <a href="/assets_config">基础配置</a>
@@ -136,7 +136,7 @@
                                     <a href="/assets_search/">资产查询</a>
                                 </li>                                
 								<li>
-	                                    <a href="/assets_log/1/">操作日志</a>
+	                                <a href="/assets_log/1/">操作日志</a>
 	                            </li>                                                                 
                             </ul>
                             <!-- /.nav-second-level -->
@@ -151,7 +151,7 @@
                                     <a href="/deploy_list">项目列表</a>
                                 </li>
                                 <li>
-                                    <a href="/deploy_order/">部署工单</a>
+                                    <a href="/deploy_order/1/">部署工单</a>
                                 </li>
 								<li>
 	                                <a href="/deploy_log/1/">操作日志</a>
@@ -169,7 +169,7 @@
                                     <a href="/cron_config">批量导入</a>
                                 </li>
                                 <li>
-                                    <a href="/cron_list">任务列表</a>
+                                    <a href="/cron_list/1/">任务列表</a>
                                 </li>
 								<li>
 	                                 <a href="/cron_log/1/">操作日志</a>
@@ -184,13 +184,27 @@
                                     <a href="/apps/model">运行模块</a>
                                 </li>
                                 <li>
+                                    <a href="#">脚本工具<span class="fa arrow"></span></a>
+                                    <ul class="nav nav-third-level">
+                                        <li>
+                                            <a href="/apps/script/online/">在线添加</a>
+                                        </li>
+                                        <li>
+                                            <a href="/apps/script/list/">脚本列表</a>
+                                        </li>                                        
+                                    </ul>                                  
+                                </li>                                  
+                                <li>
                                     <a href="#">剧本配置<span class="fa arrow"></span></a>
                                     <ul class="nav nav-third-level">
                                         <li>
-                                            <a href="/apps/playbook/add/">剧本添加</a>
+                                            <a href="/apps/playbook/upload/">上传剧本</a>
                                         </li>
                                         <li>
-                                            <a href="/apps/">剧本管理</a>
+                                            <a href="/apps/playbook/online/">在线编辑</a>
+                                        </li>                                        
+                                        <li>
+                                            <a href="/apps/">剧本列表</a>
                                         </li>
                                     </ul>
                                     <!-- /.nav-third-level -->
@@ -201,6 +215,28 @@
                             </ul>
                             <!-- /.nav-second-level -->
                         </li>
+						<li><a href="#"><i class="fa fa-database fa-fw"></i> 数据管理<span
+								class="fa arrow"></span></a>
+							<ul class="nav nav-second-level">
+								<li><a href="/db/config/">基础配置</a></li>
+								<li><a href="#">SQL管理<span class="fa arrow"></span></a>
+									<ul class="nav nav-third-level">
+										<li><a href="/db/sql/order/audit/">上线申请</a></li>
+										<li><a href="/db/sql/order/list/1/">工单列表</a></li>
+										<li><a href="/db/sql/order/search/">工单查询</a></li>
+									</ul>
+								</li>
+								<li><a href="/db/ops/">DB管理</a></li>	
+								<li><a href="/db/sql/logs/1/">操作日志</a></li>
+							</ul> <!-- /.nav-second-level --></li>		                        
+                        {% if user.is_superuser %}
+						<li><a href="#"><i class="fa fa-tasks fa-fw"></i> 任务调度<span
+								class="fa arrow"></span></a>
+							<ul class="nav nav-second-level">
+								<li><a href="/task_model/">调度类型</a></li>
+								<li><a href="/task_view/">运行日志</a></li>
+							</ul> <!-- /.nav-second-level --></li>     
+						{% endif %}                   
                         <li>
                             <a href="/config"><i class="fa fa-wrench fa-fw"></i> 全局配置</a>
                         </li>                           
@@ -354,49 +390,138 @@
                     <!-- /.panel -->
                 </div> 
      </div>
+     <div class="row">
+          <div class="col-lg-12">
+              <div class="panel panel-default">
+                  <div class="panel-heading">
+                      <i class="fa fa-keyboard-o  fa-fw"></i> 资产查询
+                  </div>
+                  <div class="panel-body">
+				      <div class="col-xs-6 col-sm-3">
+							<div class="form-group">
+								<label class="col-sm-3 control-label">设备状态:</label>
+								<div class="col-sm-8">
+									<select class="form-control"  id="selStatus"  >
+										<option selected="selected" value="">请选择一个类型</option>
+										<option value="0" name="status">已上线</option>	
+										<option value="1" name="status">已下线</option>	
+										<option value="2" name="status">维修中</option>	
+										<option value="3" name="status">已入库</option>	
+										<option value="4" name="status">未使用</option>				   		
+									</select>
+								</div>
+							</div>
+				      </div>                  
+				      <div class="col-xs-6 col-sm-3">
+							<div class="form-group">
+								<label class="col-sm-3 control-label">所属项目:</label>
+								<div class="col-sm-8">
+									 <select class="form-control" id="selProject" >
+									 	<option selected="selected" value="">请选择一个类型</option>
+									 	{% for b in baseAssets.project %}
+									 		<option value="{{b.id}}" name="project">{{b.project_name}}</option>
+									 	{% endfor %}				
+									</select>
+								</div>
+							</div>
+				      </div>                  
+				      <div class="col-xs-6 col-sm-3">
+							<div class="form-group">
+								<label class="col-sm-3 control-label">所属业务:</label>
+								<div class="col-sm-8">
+									 <select class="form-control" id="selBusiness" >
+									 	<option selected="selected" value="">请选择一个类型</option>
+									 	{% for s in baseAssets.service %}
+									 		<option value="{{s.id}}" name="business">{{s.service_name}}</option>
+									 	{% endfor %}										 					
+									</select> 
+								</div>
+							</div>
+				      </div>
+<!-- 				      <div class="col-xs-6 col-sm-3">
+							<div class="form-group">
+								<label class="col-sm-3 control-label">IP地址:</label>
+							<div class="input-group">
+								<input type="text" class="form-control">
+								<span class="input-group-btn">
+									<button class="btn btn-default" type="button">Search</button>
+								</span>
+							</div>								
+							</div>
+				      </div> -->		
+				      <div class="col-xs-6 col-sm-3">
+							<div class="form-group">
+								<label class="col-sm-3 control-label">IP地址:</label>
+								<div class="col-sm-8">
+									<input type="text" id="ip" class="form-control" value="">
+								</div>
+							</div>
+				      </div>				      		      				      
+                  </div>
+                  <div class="panel-footer">
+                  <div id="divSelectedType"></div>
+                  </div>
+              </div>
+          </div>      
+     </div>
+     
 	 <div class="row">
 	 		<div class="col-lg-12">
                     <div class="panel panel-default">
                         <div class="panel-heading">
+							    <div class="btn-group btn-group-xs pull-right">
+							    	<button type="button" class="btn btn-default"><a href="#" data-toggle="modal" data-target="#myAssetsImportModal"><i class="fa fa-pencil fa-fw"></i>批量导入</a></button>
+								    <button type="button" class="btn btn-default"><a href="/assets_search"><i class="fa fa-search fa-fw"></i>高级搜索</a></button>
+								    <button type="button" class="btn btn-default" onclick="updateAllAssets(this,'update')"><i class="fa fa-refresh fa-fw"></i>批量更新</button>
+								    <button type="button" class="btn btn-default" onclick="updateAllAssets(this,'delete')"><i class="fa fa-trash-o fa-fw"></i>批量删除</button>
+								</div>                         
                               <i class="fa fa-database"></i>资产明细
-	                            <div class="pull-right">
-	                                <div class="btn-group">
-	                                    <button type="button" class="btn btn-default btn-xs dropdown-toggle" data-toggle="dropdown">
-	                                        	更多操作
-	                                        <span class="caret"></span>
-	                                    </button>
-	                                    <ul class="dropdown-menu pull-right" role="menu">
-	                                        <li><a href="#" data-toggle="modal" data-target="#myAssetsImportModal"><i class="fa fa-pencil fa-fw"></i>批量导入</a>
-	                                        </li>
-	                                        <li><a href="/assets_search"><i class="fa fa-search fa-fw"></i>高级搜索</a>
-	                                        </li>
-	                                    </ul>
-	                                </div>
-	                            </div>                              
+                                                        
                         </div>
                         <!-- /.panel-heading -->
                         <div class="panel-body">
                             <table width="100%" class="table table-striped table-bordered table-hover" id="assetsListTable">
                                 <thead>
 									  <tr>
+									  	   <th class="text-center"><input type="checkbox" onclick="checkAllBox()"/>全选</th>
 									       <th class="text-center">资产类型</th>
 									       <th class="text-center">管理IP</th>
 									       <th class="text-center">资产编号</th>
 									       <th class="text-center">设备型号</th>
 									       <th class="text-center">放置区域</th>
-									       <th class="text-center">购买人</th>
-									       <th class="text-center">购买时间</th>
+									       <th class="text-center">所属项目</th>
 									       <th class="text-center">业务类型</th>
+									       <th class="text-center">使用组</th>
+									       <th class="text-center">购买时间</th>									       
 									       <th class="text-center">设备状态</th>
 									       <th class="text-center">操作</th>
 									    </tr>
+								        <tfoot>
+								            <tr>
+								               <th class="text-center"></th>
+										       <th class="text-center">资产类型</th>
+										       <th class="text-center">管理IP</th>
+										       <th class="text-center">资产编号</th>
+										       <th class="text-center">设备型号</th>
+										       <th class="text-center">放置区域</th>
+										       <th class="text-center">所属项目</th>
+										       <th class="text-center">业务类型</th>
+										       <th class="text-center">使用组</th>
+										       <th class="text-center">购买时间</th>
+										       <th class="text-center">设备状态</th>
+										       <th class="text-center">操作</th>
+								            </tr>
+								        </tfoot>									    
                                 </thead>
                                 <tbody>
                                 	{% for a in  assetsList %}
 	                                    <tr class="odd gradeX">
+	                                    	 <td class="text-center"><input type="checkbox" value={{a.id}} name="ckbox"/></td>
 									         <td class="text-center">	
 									         		{% if a.assets_type == "server" %}
 									         			<button  type="button" class="btn btn-default disabled">服务器</button>
+									         		{% elif a.assets_type == "vmser" %}
+									         			<button  type="button" class="btn btn-default disabled">虚拟机</button>	
 									         		{% elif a.assets_type == "switch" %}
 									         			<button  type="button" class="btn btn-default disabled">交换机</button>	
 									         		{% elif a.assets_type == "route" %}
@@ -413,9 +538,30 @@
 									         			<button  type="button" class="btn btn-default disabled">无线设备</button>									         													         												         												         											         												         			
 									         		{% endif %}
 									         </td>
-									         <td class="text-center">{{ a.management_ip }}</td>
+									         <td>
+									         	{% if a.management_ip %}
+													<ul class="list-unstyled">
+						                                <li><span class="label label-danger">外</span>:<code>{{ a.management_ip }}</code></li>
+						                                {% for ds in a.nks %}
+						                                	{% if ds.ip != 'unkown' and ds.ip !=  a.management_ip %}
+						                                		<li><span class="label label-success">内</span>:<code>{{ds.ip}}</code></li>
+						                                	{% endif %}
+						                                {% endfor %}
+						                            </ul>									         			
+									         											         		
+									         	{% else %}
+													<ul class="list-unstyled">
+						                                <li><span class="label label-danger">外</span>:<code>{{ a.server_assets.ip }}</code></li>
+						                                {% for ds in a.nks %}
+						                                	{% if ds.ip != 'unkown' and ds.ip !=  a.server_assets.ip %}
+						                                		<li><span class="label label-success">内</span>:<code>{{ds.ip}}</code></li>
+						                                	{% endif %}
+						                                {% endfor %}
+						                            </ul>									         		
+									         	{% endif %}
+									         </td>
 									         <td class="text-center">{{ a.name }}</td>
-									         <td class="text-center">{{ a.model }}</td>
+									         <td class="text-center">{{ a.model|default:"无" }}</td>
 									         <td class="text-center">
 									         	{% for z in baseAssets.zone %}
 									         		{% if z.id == a.put_zone %}
@@ -423,14 +569,33 @@
 									         		{% endif %}
 									         	{% endfor %}
 									         </td>
-									         <td class="text-center">{{ a.buy_user }}</td>
-									         <td class="text-center">{{ a.buy_time|date:"Y/m/d" }}</td>
+									         <td class="text-center">
+									         	{% for s in baseAssets.project %}
+									         		{% if s.id == a.project %}
+									         			<button  type="button" class="btn btn-default disabled">{{ s.project_name }}</button>	
+									         		{% endif %}
+									         	{% endfor %}								         		
+									         </td>									         
 									         <td class="text-center">
 									         	{% for s in baseAssets.service %}
 									         		{% if s.id == a.business %}
 									         			<button  type="button" class="btn btn-default disabled">{{ s.service_name }}</button>	
 									         		{% endif %}
 									         	{% endfor %}								         		
+									         </td>									         
+									         <td class="text-center">
+									         	{% for g in baseAssets.group %}
+									         		{% if g.id == a.group %}
+									         			{{ g.name }}
+									         		{% endif %}
+									         	{% endfor %}
+									         </td>
+									         <td class="text-center">
+									         	{% if a.buy_time %}
+									         		{{ a.buy_time|date:"Y/m/d" }}
+									         	{% else %}
+									         		{{ a.create_date|date:"Y/m/d" }}
+									         	{% endif %}									         
 									         </td>
 									         <td class="text-center">
 									         		{% if a.status == 0 %}
@@ -447,7 +612,7 @@
 									         </td>	
 									         <td class="text-center">
 									         	<a href="/assets_view/{{a.id}}" style="text-decoration:none;"><button  type="button" class="btn btn-default"><abbr title="查看详细信息"><i class="glyphicon glyphicon-info-sign"></i></abbr></button></a>
-									         	{% if a.assets_type == "server" %}
+									         	{% if a.assets_type == "server" or a.assets_type == "vmser" %}
 												<div class="btn-group">				
 												   <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown">
 												   	   <font class="glyphicon glyphicon-refresh"></font>
@@ -497,9 +662,7 @@
                     <!-- /.panel -->
                 </div>
 	 </div>
-</div>
-	
-
+	 
                             <div class="modal fade" id="myAssetsImportModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
                                 <div class="modal-dialog">
                                     <div class="modal-content">
@@ -526,9 +689,15 @@
                                 </div>
                                 <!-- /.modal-dialog -->
                             </div>
+	 
+</div>
+	
 
 
-    </div>
+
+
+
+
     <!-- /#wrapper -->
 	
 
@@ -538,8 +707,206 @@
    	<!--   csrf -->
 	<script src="/static/js/csrf.js"></script>
 
+    <script type="text/javascript">
+        var curpage = 1;
+        $(document).ready(function () {       
+
+            //业务类型
+            $('#selBusiness').change(function () {
+                if ($('#selBusiness').val() != "") {
+                    $("#hdnBusiness").val($('#selBusiness').val());
+                    var span = "<span class='label label-success' id='spanBusiness'>" + $("#selBusiness").find("option:selected").text()
+                    + " <img alt='' src='/static/img/close.png' onclick='removeself(this)' /><input name='business' type='hidden' value='"
+                    + $('#selBusiness').val() + "' /></span> &nbsp;";
+                    if ($("#spanBusiness").length == 0) {
+                        $('#divSelectedType').append(span);
+                    }
+                    else {
+                        $("#spanBusiness").html($("#selBusiness").find("option:selected").text()
+                         + " <img alt='' src='/static/img/close.png' onclick='removeself(this)' /><input name='business' type='hidden' value='"
+                         + $('#selBusiness').val() + "' /></span> &nbsp;");
+                    }
+                    changepage(1);
+                }
+            })   
+            
+			//设备状态
+            $('#selStatus').change(function () {
+                if ($('#selStatus').val() != "") {
+                    $("#hdnStatus").val($('#selStatus').val());
+                    var span = "<span class='label label-success' id='spanStatus'>" + $("#selStatus").find("option:selected").text()
+                    + " <img alt='' src='/static/img/close.png' onclick='removeself(this)' /><input name='status' type='hidden' value='"
+                    + $('#selStatus').val() + "' /></span> &nbsp;";
+                    if ($("#spanStatus").length == 0) {
+                        $('#divSelectedType').append(span);
+                    }
+                    else {
+                        $("#spanStatus").html($("#selStatus").find("option:selected").text()
+                         + " <img alt='' src='/static/img/close.png' onclick='removeself(this)' /><input name='status' type='hidden' value='"
+                         + $('#selStatus').val() + "' /></span> &nbsp;");
+                    }
+                    changepage(1);
+                }
+            })  
+            //ip地址
+            $('#ip').change(function () {
+                if ($('#ip').val() != "") {
+                    var span = "<span class='label label-success' id='spanIp'>" + $("#ip").val()
+                    + " <img alt='' src='/static/img/close.png' onclick='removeself(this)' /><input name='ip' type='hidden' value='"
+                    + $('#ip').val() + "' /></span> &nbsp;";
+                    if ($("#spanIp").length == 0) {
+                        $('#divSelectedType').append(span);
+                    }
+                    else {
+                        $("#spanIp").html($("#ip").val()
+                         + " <img alt='' src='/static/img/close.png' onclick='removeself(this)' /><input name='ip' type='hidden' value='"
+                         + $('#ip').val() + "' /></span> &nbsp;");
+                    }
+                    changepage(1);
+                }
+            })             
+			//所属项目
+            $('#selProject').change(function () {
+                if ($('#selProject').val() != "") {
+                    $("#hdnProject").val($('#selProject').val());
+                    var span = "<span class='label label-success' id='spanSelinux'>" + $("#selProject").find("option:selected").text()
+                    + " <img alt='' src='/static/img/close.png' onclick='removeself(this)' /><input name='project' type='hidden' value='"
+                    + $('#selProject').val() + "' /></span> &nbsp;";
+                    if ($("#spanSelinux").length == 0) {
+                        $('#divSelectedType').append(span);
+                    }
+                    else {
+                        $("#spanSelinux").html($("#selProject").find("option:selected").text()
+                         + " <img alt='' src='/static/img/close.png' onclick='removeself(this)' /><input name='project' type='hidden' value='"
+                         + $('#selProject').val() + "' /></span> &nbsp;");
+                    }
+                    changepage(1);
+                }
+            })            
+            
+        })
+
+        function search_go() {
+            var parameter = {};
+            $("input[type='hidden']").each(function () {
+                var key = $(this).prop('name');
+                var value = $(this).val();
+                if (key != "csrfmiddlewaretoken"){
+                	parameter[key] = value;
+                }
+                
+            })
+
+            var count = 0;
+            for (var i in parameter) {
+                count += i;
+                break;
+            }
+            if (count == 0) {
+                return false;
+            }
+
+            $.post('/assets_search/', parameter, function (result) {
+                if (result["data"].length > 0) {
+/*                 	document.getElementById("div-search-result").style.display = ""; */
+						 var table = $('#assetsListTable').dataTable();
+						 oSettings = table.fnSettings();
+						 table.fnClearTable(this);
+						 for (var i=0; i<result["data"].length; i++)
+						 {
+						   table.oApi._fnAddData(oSettings, result["data"][i]);
+						 }
+						 oSettings.aiDisplay = oSettings.aiDisplayMaster.slice();
+						 table.fnDraw();                	               	
+                }
+                else{
+                	//没有数据就清空
+                	var table = $('#assetsListTable').dataTable();
+                	table.fnClearTable(this);
+                }
+            })
+        }
+
+        function changepage(pageindex) {
+            curpage = pageindex;
+            search_go();
+        }
+
+        function removeself(obj) {
+            $(obj).parent().remove();
+            changepage(1);
+        }
+        
+
+</script>
 
 <script type="text/javascript"> 
+
+	var selectState = false;  
+	function checkAllBox(){ 
+	  	var qcheck=document.getElementsByName("ckbox");
+	  	for (var i = 0; i < qcheck.length; i++)  
+		  {  
+		    var checkbox = qcheck[i];  
+		    checkbox.checked = !selectState; 
+		  }  
+	  	selectState = !selectState; 
+	}  
+
+
+	function updateAllAssets(obj,model){
+		var btnObj = $(obj);
+		btnObj.attr('disabled',true);
+		var serverId = [];
+	  	var qcheck=document.getElementsByName("ckbox");
+	  	for (var i = 0; i < qcheck.length; i++)  
+		  {  
+	  		if(qcheck[i].checked==true){
+	  			serverId.push(qcheck[i].value);
+	  		}
+		  } 	
+	  	if (serverId.length > 0){
+			$.ajax({
+				  type: 'POST',
+				  url: '/assets/batch/',
+				  dataType:"json",
+				  data:{
+					  'assetsIds':serverId,
+					  'model':model
+				  },
+			      success:function(response){	
+			    	var sip = '';
+			    	var fip = '';
+			    	var modal = '';
+		    		for  (var i = 0; i < response['data']['success'].length; i++){
+		    			 sip += response['data']['success'][i] + '<br>'
+		    		}
+		    		for  (var i = 0; i < response['data']['failed'].length; i++){
+		    			 fip += response['data']['failed'][i] + '<br>'
+		    		}	
+		    		msg = '成功：'+ '<br>' + sip + '<br>' + '失败：'+ '<br>' + fip;	
+ 			    	if (response['code']==200){
+			    		window.wxc.xcConfirm(msg, window.wxc.xcConfirm.typeEnum.success);
+			    	}
+			    	else{
+			    		window.wxc.xcConfirm(msg, window.wxc.xcConfirm.typeEnum.error);
+			    	}
+				    btnObj.removeAttr('disabled');
+/* 	              	location.reload('/apps/');	 */			            
+			      },
+	              error:function(response){
+	            	btnObj.removeAttr('disabled');
+	            	window.wxc.xcConfirm("更新失败！", window.wxc.xcConfirm.typeEnum.error);	
+	              }
+				});			
+	  	}
+	  	else{
+	  		window.wxc.xcConfirm("至少选择一个资产~", window.wxc.xcConfirm.typeEnum.error);
+	  		btnObj.removeAttr('disabled');
+	  	}
+	}
+
+
 	$(document).ready(function() {
 	    $('#assetsListTable').DataTable({
 	        responsive: true
@@ -552,6 +919,8 @@
 	           		{
 	           			{% if ds.assets_type == "server" %}
 	         				label: "服务器",
+			         	{% elif ds.assets_type == "vmser" %}
+               				label: "虚拟机",		         				
 	         			{% elif ds.assets_type == "switch" %}
 	           				label: "交换机",
 	         			{% elif ds.assets_type == "route" %}
@@ -604,6 +973,8 @@
 		         				label: "服务器",
 		         			{% elif ds.assets_type == "switch" %}
 	               				label: "交换机",
+			         		{% elif ds.assets_type == "vmser" %}
+	               				label: "虚拟机",	               				
 		         			{% elif ds.assets_type == "route" %}
 		         				label: "路由器",	
 		         			{% elif ds.assets_type == "printer" %}

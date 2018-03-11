@@ -8,7 +8,8 @@ from django.contrib.auth.decorators import permission_required
 from django.db.models import Q 
 from OpsManage.views import assets
 from OpsManage.models import (Server_Assets,Project_Order,Service_Assets,
-                                Assets,User_Server,Global_Config)
+                                Assets,User_Server,Global_Config,
+                                Project_Assets)
 @login_required()
 @permission_required('auth.change_user',login_url='/noperm/') 
 def user_manage(request):
@@ -56,11 +57,12 @@ def user_center(request):
                     ser = Server_Assets.objects.get(id=s.server_id)
                     serverList.append(ser.assets)
         except:
-            pass        
+            config = None     
         orderList = Project_Order.objects.filter(Q(order_user=User.objects.get(username=request.user)) |
                                                 Q(order_audit=User.objects.get(username=request.user))).order_by("id")[0:150]       
         return render(request,'users/user_center.html',{"user":request.user,"orderList":orderList,
-                                                            "serverList":serverList,"baseAssets":baseAssets,}) 
+                                                        "serverList":serverList,"baseAssets":baseAssets,
+                                                        "config":config}) 
     if request.method == "POST":
         if request.POST.get('password') == request.POST.get('c_password'):
             try:
@@ -99,11 +101,12 @@ def user(request,uid):
         for ser in serverList:
             if ser.id in userServerListId:ser.status = 1
             else:ser.status = 0
-            
+        projectList = Project_Assets.objects.all()    
         serviceList = Service_Assets.objects.all()                      
         return render(request,'users/user_info.html',{"user":request.user,"user_info":user,
                                                           "serverList":serverList,"serviceList":serviceList,
-                                                          "permList":permList,"groupList":groupList})
+                                                          "permList":permList,"groupList":groupList,
+                                                          "projectList":projectList})
             
     elif request.method == "POST":
         try:

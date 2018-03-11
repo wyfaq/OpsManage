@@ -22,7 +22,7 @@
 											<div class="form-group">
 												 <label class="col-sm-2 control-label">项目名称</label>
 												 <div class="col-sm-6">
-												 	<input type="text" class="form-control" name="project_name" value="{{order.order_project.project_name}}"  class="input-xlarge" readonly="readonly" />
+												 	<input type="text" class="form-control" name="project_name" value="{{order.order_project.project.project_name}}"  class="input-xlarge" readonly="readonly" />
 												 	<input type="hidden" class="form-control" name="project_uuid" value="{{order.order_project.project_uuid}}" readonly="readonly"/>
 												 </div>
 											</div>
@@ -265,7 +265,7 @@
 				onOk: function(){
 					$.ajax({
 						  type: 'POST',
-						  url: '/deploy_order/',
+						  url: '/deploy_order/1/',
 						  data: {
 							  "id":id,
 							  "model":model,
@@ -301,7 +301,7 @@
 					};
 					$.ajax({
 						  type: 'POST',
-						  url: '/deploy_order/',
+						  url: '/deploy_order/1/',
 						  data: {
 							  "model":model,
 							  'order_cancel':result,
@@ -333,7 +333,7 @@
 	function finishDeploy(obj){
 		$.ajax({
 		  type: 'POST',
-		  url: '/deploy_order/',
+		  url: '/deploy_order/1/',
 		  data: {
 			  "id":{{order.id}},
 			  "model":'finish',
@@ -393,7 +393,7 @@
 	            			if (noDeployServer.length == 0){
 	            				$.ajax({
 	            					  type: 'POST',
-	            					  url: '/deploy_order/',
+	            					  url: '/deploy_order/1/',
 	            					  data: {
 	            						  "id":{{order.id}},
 	            						  "model":'finish',

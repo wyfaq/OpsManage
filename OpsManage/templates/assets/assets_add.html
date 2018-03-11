@@ -22,13 +22,14 @@
                                 <div class="col-lg-8">
 									<fieldset>
 									<legend>设备资产信息录入 - 必填信息</legend> 
-										<form role="form" method="post" id="addHost" class="main form-horizontal" >{% csrf_token %}
+										<form role="form" method="post" id="addAssets" class="main form-horizontal" >{% csrf_token %}
 										<fieldset>
 											<div class="form-group" >
 												 <label class="col-sm-2 control-label">设备类型</label>
 												 <div class="col-sm-6">
 												   <select class="form-control" name="asset_assets_type" id='assets_type_select' onchange="javascript:oBtAssetsType();" >
 														<option value="server" name="asset_assets_type">服务器</option>
+														<option value="vmser" name="asset_assets_type">虚拟机</option>
 														<option value="switch" name="asset_assets_type">交换机</option>	
 														<option value="route" name="asset_assets_type">路由器</option>	
 														<option value="printer" name="asset_assets_type">打印机</option>	
@@ -46,7 +47,8 @@
 												 	<input type="text" class="form-control" name="asset_name" placeholder="编号" value="" class="input-xlarge"  required/>
 												 </div>
 											</div>
-											
+																						
+											<div id="asset_vmserver_chioce" >	
 											<div class="form-group">
 												 <label class="col-sm-2 control-label">设备序列号</label>
 												 <div class="col-sm-6">
@@ -67,20 +69,24 @@
 												 	<input  type="text"  name="asset_expire_date"  class="form-control form_datetime" data-date-format="yyyy-mm-dd" title="例如2016-01-01" required>
 												 </div>
 											</div>															
-														
-											<div class="form-group">
-												 <label class="col-sm-2 control-label">购买人</label>
-												 <div class="col-sm-6">
-												 	<input type="text" class="form-control" name="asset_buy_user" placeholder="购买人" value="" class="input-xlarge"  required/>
-												 </div>
-											</div>	
-											
 											<div class="form-group">
 												 <label class="col-sm-2 control-label">管理IP</label>
 												 <div class="col-sm-6">
-												 	<input type="text" class="form-control" name="asset_management_ip" placeholder="管理/预设IP" value=""   class="input-xlarge" />
+												 	<input type="text" class="form-control" name="asset_management_ip" placeholder="管理/预设IP" value="" pattern="^(\d+\.\d+\.\d+\.\d+|[a-zA-Z0-9][-a-zA-Z0-9]{0,62}(/.[a-zA-Z0-9][-a-zA-Z0-9]{0,62})+/.?))$"  class="input-xlarge" />
 												 </div>
 											</div>															
+											<div class="form-group">
+												 <label class="col-sm-2 control-label">购买人</label>
+												 <div class="col-sm-6">
+												   <select class="form-control" name="asset_buy_user"  required>
+												   		<option selected="selected" value="">请选择一个用户</option>
+														{% for user in userList %}
+															<option value="{{user.id}}" name="asset_buy_user">{{user.username}}</option>	
+														{% endfor %}			   		
+													</select>												 	
+												 </div>
+											</div>	
+																									
 												
 											<div class="form-group">
 												 <label class="col-sm-2 control-label">生产制造商</label>
@@ -102,12 +108,12 @@
 												 	<input type="text" class="form-control" name="asset_provider" placeholder="供货商" value="" class="input-xlarge"  required/>
 												 </div>
 											</div>													
-													
+											</div>
 											<div class="form-group">
 												 <label class="col-sm-2 control-label">设备状态</label>
 												 <div class="col-sm-6">
 												   <select class="form-control" name="asset_status" id="asset_status_select"  >
-												   		<option selected="selected" value="">请选择一个类型</option>
+												   			<option selected="selected" value="">请选择一个类型</option>
 															<option value="0" name="asset_status">已上线</option>	
 															<option value="1" name="asset_status">已下线</option>	
 															<option value="2" name="asset_status">维修中</option>	
@@ -140,15 +146,24 @@
 													</select>
 												 </div>
 											</div>																	
+
+											<div class="form-group">
+												 <label class="col-sm-2 control-label">所属项目</label>
+												 <div class="col-sm-6">
+												   <select class="form-control" name="asset_project"  id="asset_project" onchange="javascript:oBtProjectSelect();">
+												   		<option selected="selected" value="">请选择一个类型</option>
+															{% for p in baseAssets.project %}
+																<option value="{{p.id}}" name="asset_project">{{p.project_name}}</option>
+															{% endfor %}								   							
+													</select>
+												 </div>
+											</div>
 														
 											<div class="form-group">
 												 <label class="col-sm-2 control-label">业务类型</label>
 												 <div class="col-sm-6">
-												   <select class="form-control" name="asset_business"  >
-												   		<option selected="selected" value="">请选择一个类型</option>
-															{% for s in baseAssets.service %}
-																<option value="{{s.id}}" name="asset_business">{{s.service_name}}</option>
-															{% endfor %}								   							
+												   <select class="form-control" name="asset_business" id="asset_business" >
+												   		<option selected="selected" value="">请选择一个类型</option>								   							
 													</select>
 												 </div>
 											</div>		
@@ -156,7 +171,7 @@
 											</fieldset>
 											<fieldset>		
 					
-											<div id="asset_server_chioce" >					
+											<div id="asset_server_chioce">					
 											<legend>服务器设备资产信息录入 - 可选信息</legend>
 					
 											<div class="form-group" >
@@ -194,8 +209,6 @@
 													 	<input type="text" class="form-control" name="server_hostname" placeholder="Hostname"  class="input-xlarge" value="" />
 													 </div>
 												</div>																						
-												
-							
 											</div>
 											
 											<div class="form-group">
@@ -303,7 +316,7 @@
 											
 											<fieldset>
 					
-											<div id="asset_net_chioce" style="display:none;" >					
+											<div id="asset_net_chioce" style="display:none;">					
 											<legend>网络设备资产信息录入 - 可选信息</legend>
 					
 											<div class="form-group" >
@@ -386,6 +399,29 @@
 <script type="text/javascript"> 
 	$(function () { $("[data-toggle='tooltip']").tooltip(); });
 	
+	function oBtProjectSelect(){
+		   $('#asset_business option:selected').empty();
+		   var dbId = $('#asset_project option:selected').val();
+		   if ( dbId.length > 0){	 
+				$.ajax({
+					dataType: "JSON",
+					url:'/api/project/'+ dbId + '/', //请求地址
+					type:"GET",  //提交类似
+					success:function(response){
+						var binlogHtml = '<select class="form-control" name="asset_business" id="asset_business" >'
+						var selectHtml = '';
+						for (var i=0; i <response["service_assets"].length; i++){
+							 selectHtml += '<option name="asset_business" value="'+ response["service_assets"][i]["id"] +'">' + response["service_assets"][i]["service_name"] + '</option>' 
+						};                        
+						binlogHtml =  binlogHtml + selectHtml + '</select>';
+						document.getElementById("asset_business").innerHTML= binlogHtml;	
+							
+					},
+				});	
+		   };
+	
+	}	
+	
 	function getFormData (form, filler) {
 		var assets = {};
 		var server = {};
@@ -430,7 +466,7 @@
 			}
 			
 		}
-		if (assets.assets_type == "server"){
+		if (assets.assets_type == "server" || assets.assets_type=="vmser"){
 			server.assets = assets;
 			return server;		
 		}
@@ -440,21 +476,28 @@
 		}
 	}
 	
+	var assets = ['asset_assets_type','asset_name','asset_sn','asset_buy_time','asset_buy_user','asset_management_ip','asset_manufacturer','asset_provider','asset_model','asset_status','asset_put_zone','asset_group','asset_business','asset_project'];
 	function oBtAssetsType() {
 		   var obj = document.getElementById("assets_type_select"); 
 		   var index = obj.selectedIndex;
 		   var value = obj.options[index].value; 
 		   if (value=="server"){
-			   document.getElementById("asset_server_chioce").style.display = "";  
-			   document.getElementById("asset_net_chioce").style.display = "none";		   
-		   }
-		   else if (value==""){
 			   document.getElementById("asset_net_chioce").style.display = "none";
-			   document.getElementById("asset_server_chioce").style.display = "none";
+			   document.getElementById("asset_server_chioce").style.display = "";  
+			   document.getElementById("asset_vmserver_chioce").style.display = "";	
+			   assets = ['asset_assets_type','asset_name','asset_sn','asset_buy_time','asset_buy_user','asset_management_ip','asset_manufacturer','asset_provider','asset_model','asset_status','asset_put_zone','asset_group','asset_business','asset_project'];
 		   }
-		   else {
+		   else if (value=="vmser"){
+			   document.getElementById("asset_server_chioce").style.display = "";  
+			   document.getElementById("asset_net_chioce").style.display = "none";		
+			   document.getElementById("asset_vmserver_chioce").style.display = "none";	
+			   assets = ['asset_assets_type','asset_name','asset_status','asset_put_zone','asset_group','asset_business'];
+		   }		   
+ 		   else {
 			   document.getElementById("asset_net_chioce").style.display = "";
 			   document.getElementById("asset_server_chioce").style.display = "none";	
+			   document.getElementById("asset_vmserver_chioce").style.display = "";	
+			   assets = ['asset_assets_type','asset_name','asset_sn','asset_buy_time','asset_buy_user','asset_management_ip','asset_manufacturer','asset_provider','asset_model','asset_status','asset_put_zone','asset_group','asset_business','asset_project'];
 		   }
 	}
 
@@ -471,21 +514,21 @@
 	}	
 	
 	function addAssetsData(obj) {
-		var form = document.getElementById('addHost');
+		console.log(assets);
+		var form = document.getElementById('addAssets');
 		for (var i = 0; i < form.length; ++i) {
 			var name = form[i].name;
 			var value = form[i].value;
 			var assetStart = name.indexOf("asset_");
-			if (assetStart==0 && value.length == 0){
+			if (assetStart==0 && value.length == 0 && assets.indexOf(name)>=0 ){
 				window.wxc.xcConfirm("请注意必填项不能为空~", window.wxc.xcConfirm.typeEnum.error);
 				return false;
 			}
 			
 		};
-		var asset_data = getFormData(document.getElementById('addHost'),'');
-//	 	alert(JSON.stringify(asset_data));  
+		var asset_data = getFormData(document.getElementById('addAssets'),''); 
 		var btnObj = $(obj);
-		if (asset_data.assets.assets_type=="server"){
+		if (asset_data.assets.assets_type=="server" || asset_data.assets.assets_type=="vmser"){
 			var putUrl = '/api/server/';
 		}
 		else {
@@ -503,7 +546,7 @@
 				window.wxc.xcConfirm("资产添加成功", window.wxc.xcConfirm.typeEnum.success);
 			},
 	    	error:function(response){
-	    		window.wxc.xcConfirm("资产添加失败："+response.toJSONString(), window.wxc.xcConfirm.typeEnum.error);
+	    		window.wxc.xcConfirm("资产添加失败：注意资产编号不要重复或者字段类型是否正确", window.wxc.xcConfirm.typeEnum.error);
 	    	}
 		})	
 	}	

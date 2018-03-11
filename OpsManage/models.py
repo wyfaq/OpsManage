@@ -8,6 +8,7 @@ sys.setdefaultencoding("utf-8")
 class Assets(models.Model):
     assets_type_choices = (
                           ('server',u'服务器'),
+                          ('vmser',u'虚拟机'),
                           ('switch',u'交换机'),
                           ('route',u'路由器'),
                           ('printer',u'打印机'),
@@ -18,10 +19,10 @@ class Assets(models.Model):
                           )
     assets_type = models.CharField(choices=assets_type_choices,max_length=100,default='server',verbose_name='资产类型')
     name = models.CharField(max_length=100,verbose_name='资产编号',unique=True)
-    sn =  models.CharField(max_length=100,verbose_name='设备序列号')
+    sn =  models.CharField(max_length=100,verbose_name='设备序列号',blank=True,null=True)
     buy_time = models.DateField(blank=True,null=True,verbose_name='购买时间')
     expire_date = models.DateField(u'过保修期',null=True, blank=True)
-    buy_user = models.CharField(max_length=100,blank=True,null=True,verbose_name='购买人')
+    buy_user = models.SmallIntegerField(blank=True,null=True,verbose_name='购买人')
     management_ip = models.GenericIPAddressField(u'管理IP',blank=True,null=True)
     manufacturer = models.CharField(max_length=100,blank=True,null=True,verbose_name='制造商')
     provider = models.CharField(max_length=100,blank=True,null=True,verbose_name='供货商')
@@ -30,6 +31,7 @@ class Assets(models.Model):
     put_zone = models.SmallIntegerField(blank=True,null=True,verbose_name='放置区域')
     group = models.SmallIntegerField(blank=True,null=True,verbose_name='使用组')
     business = models.SmallIntegerField(blank=True,null=True,verbose_name='业务类型')
+    project = models.SmallIntegerField(blank=True,null=True,verbose_name='项目类型')
     create_date = models.DateTimeField(auto_now_add=True)
     update_date = models.DateTimeField(auto_now_add=True)
     class Meta:
@@ -147,30 +149,38 @@ class Ram_Assets(models.Model):
         
 class NetworkCard_Assets(models.Model):   
     assets = models.ForeignKey('Assets')
-    macaddress = models.CharField(u'MAC', max_length=64,unique=True)
-    ipaddress = models.GenericIPAddressField(u'IP', blank=True,null=True)
-    device_model = models.CharField(max_length=100,blank=True,null=True,verbose_name='网卡型号')
-    device_brand = models.CharField(max_length=100,blank=True,null=True,verbose_name='网卡生产商')
-    device_status = models.CharField(max_length=100,blank=True,null=True,verbose_name='网卡状态')
-    create_date = models.DateTimeField(auto_now_add=True)
-    update_date = models.DateTimeField(auto_now_add=True)    
+    device =  models.CharField(max_length=20,blank=True,null=True)
+    macaddress = models.CharField(u'MAC',max_length=64,blank=True,null=True)
+    ip = models.GenericIPAddressField(u'IP', blank=True,null=True)
+    module = models.CharField(max_length=50,blank=True,null=True)
+    mtu = models.CharField(max_length=50,blank=True,null=True)
+    active = models.SmallIntegerField(blank=True,null=True,verbose_name='是否在线')
     class Meta:
         db_table = 'opsmanage_networkcard_assets'
-        permissions = (
-            ("can_read_networkcard_assets", "读取网卡资产权限"),
-            ("can_change_networkcard_assets", "更改网卡资产权限"),
-            ("can_add_networkcard_assets", "添加网卡资产权限"),
-            ("can_delete_networkcard_assets", "删除网卡资产权限"),             
-        ) 
-        verbose_name = '网卡资产表'  
-        verbose_name_plural = '网卡资产表'         
+        verbose_name = '服务器网卡资产表'  
+        verbose_name_plural = '服务器网卡资产表'  
+        unique_together = (("assets", "macaddress"))       
         
-
+class Project_Assets(models.Model):
+    '''项目资产表'''
+    project_name = models.CharField(max_length=100,unique=True) 
+    class Meta:
+        db_table = 'opsmanage_project_assets'
+        permissions = (
+            ("can_read_project_assets", "读取项目资产权限"),
+            ("can_change_project_assets", "更改项目资产权限"),
+            ("can_add_project_assets", "添加项目资产权限"),
+            ("can_delete_project_assets", "删除项目资产权限"),              
+        )  
+        verbose_name = '项目资产表'  
+        verbose_name_plural = '项目资产表' 
               
     
 class Service_Assets(models.Model):
     '''业务分组表'''
-    service_name = models.CharField(max_length=100,unique=True) 
+    project = models.ForeignKey('Project_Assets',related_name='service_assets', on_delete=models.CASCADE)
+    service_name = models.CharField(max_length=100) 
+    
     class Meta:
         db_table = 'opsmanage_service_assets'
         permissions = (
@@ -179,12 +189,16 @@ class Service_Assets(models.Model):
             ("can_add_service_assets", "添加业务资产权限"),
             ("can_delete_service_assets", "删除业务资产权限"),              
         )  
+        unique_together = (("project", "service_name"))
         verbose_name = '业务分组表'  
         verbose_name_plural = '业务分组表'  
                   
 
 class Zone_Assets(models.Model):  
     zone_name = models.CharField(max_length=100,unique=True) 
+    zone_contact = models.CharField(max_length=100,blank=True,null=True,verbose_name='机房联系人')
+    zone_number = models.CharField(max_length=100,blank=True,null=True,verbose_name='联系人号码')
+    zone_network = models.CharField(max_length=100,blank=True,null=True,verbose_name='机房网段')
     '''自定义权限'''
     class Meta:
         db_table = 'opsmanage_zone_assets'
@@ -245,9 +259,10 @@ class Project_Config(models.Model):
     deploy_model_choices =  (
                           ('branch',u'branch'),
                           ('tag',u'tag'),
-                          )   
+                          )  
+    project = models.ForeignKey('Project_Assets',related_name='project_config', on_delete=models.CASCADE) 
     project_env = models.CharField(max_length=50,verbose_name='项目环境',default=None) 
-    project_name = models.CharField(max_length=100,verbose_name='项目名称',default=None)    
+    project_service = models.SmallIntegerField(verbose_name='业务类型')
     project_local_command = models.TextField(blank=True,null=True,verbose_name='部署服务器要执行的命令',default=None)
     project_repo_dir = models.CharField(max_length=100,verbose_name='本地仓库目录',default=None)
     project_dir = models.CharField(max_length=100,verbose_name='代码目录',default=None)
@@ -271,7 +286,7 @@ class Project_Config(models.Model):
             ("can_add_project_config", "添加项目权限"),
             ("can_delete_project_config", "删除项目权限"),               
         )
-        unique_together = (("project_env", "project_name"))
+        unique_together = (("project_env", "project"))
         verbose_name = '项目管理表'  
         verbose_name_plural = '项目管理表'  
 
@@ -394,7 +409,7 @@ class Log_Ansible_Model(models.Model):
             ("can_read_log_ansible_model", "读取Ansible模块执行记录权限"),
             ("can_change_log_ansible_model", "更改Ansible模块执行记录权限"),
             ("can_add_log_ansible_model", "添加Ansible模块执行记录权限"),
-            ("can_delete_log_ansible_model", "删除Ansible模块执行记录权限"),            
+            ("can_delete_log_ansible_model", "删除Ansible模块执行记录权限"),         
         )
         verbose_name = 'Ansible模块执行记录表'  
         verbose_name_plural = 'Ansible模块执行记录表' 
@@ -421,10 +436,36 @@ class Ansible_Playbook(models.Model):
             ("can_read_ansible_playbook", "读取Ansible剧本权限"),
             ("can_change_ansible_playbook", "更改Ansible剧本权限"),
             ("can_add_ansible_playbook", "添加Ansible剧本权限"),
-            ("can_delete_ansible_playbook", "删除Ansible剧本权限"),              
+            ("can_delete_ansible_playbook", "删除Ansible剧本权限"),        
+            ("can_exec_ansible_playbook", "执行Ansible剧本权限"),       
         )
         verbose_name = 'Ansible剧本配置表'  
         verbose_name_plural = 'Ansible剧本配置表' 
+        
+        
+class Ansible_Script(models.Model): 
+    script_name = models.CharField(max_length=50,verbose_name='脚本名称',unique=True)
+    script_uuid = models.CharField(max_length=50,verbose_name='唯一id')
+    script_server = models.TextField(max_length=200,verbose_name='目标机器',blank=True,null=True)
+    script_file = models.FileField(upload_to = './upload/script/',verbose_name='脚本路径')
+    script_service = models.SmallIntegerField(verbose_name='授权业务',blank=True,null=True)
+    script_group = models.SmallIntegerField(verbose_name='授权组',blank=True,null=True)
+    script_type = models.CharField(max_length=50,verbose_name='脚本类型',blank=True,null=True)
+    class Meta:
+        db_table = 'opsmanage_ansible_script'
+        permissions = (
+            ("can_read_ansible_script", "读取Ansible脚本权限"),
+            ("can_change_ansible_script", "更改Ansible脚本权限"),
+            ("can_add_ansible_script", "添加Ansible脚本权限"),
+            ("can_delete_ansible_script", "删除Ansible脚本权限"),   
+            ("can_exec_ansible_script", "执行Ansible脚本权限"),    
+            ("can_exec_ansible_model", "执行Ansible模块权限"),      
+            ("can_read_ansible_model", "读取Ansible模块权限"),   
+        )
+        verbose_name = 'Ansible脚本配置表'  
+        verbose_name_plural = 'Ansible脚本配置表'         
+
+        
 
 class Log_Ansible_Playbook(models.Model): 
     ans_id = models.IntegerField(verbose_name='id',blank=True,null=True,default=None)
@@ -435,6 +476,12 @@ class Log_Ansible_Playbook(models.Model):
     create_time = models.DateTimeField(auto_now_add=True,blank=True,null=True,verbose_name='执行时间')
     class Meta:
         db_table = 'opsmanage_log_ansible_playbook'
+        permissions = (
+            ("can_read_log_ansible_playbook", "读取Ansible剧本执行记录权限"),
+            ("can_change_log_ansible_playbook", "更改Ansible剧本执行记录权限"),
+            ("can_add_log_ansible_playbook", "添加Ansible剧本执行记录权限"),
+            ("can_delete_log_ansible_playbook", "删除Ansible剧本执行记录权限"),
+        )
         verbose_name = 'Ansible剧本操作记录表'  
         verbose_name_plural = 'Ansible剧本操作记录表' 
 
@@ -465,6 +512,7 @@ class Global_Config(models.Model):
     server = models.SmallIntegerField(verbose_name='是否开启服务器命令记录',blank=True,null=True)
     email = models.SmallIntegerField(verbose_name='是否开启邮件通知',blank=True,null=True)
     webssh = models.SmallIntegerField(verbose_name='是否开启WebSSH',blank=True,null=True)
+    sql = models.SmallIntegerField(verbose_name='是否开启WebSSH',blank=True,null=True)
     class Meta:
         db_table = 'opsmanage_global_config'
     
@@ -518,3 +566,158 @@ class User_Server(models.Model):
         unique_together = (("server_id", "user_id"))
         verbose_name = '用户服务器表'  
         verbose_name_plural = '用户服务器表'
+        
+    
+
+class Inception_Server_Config(models.Model):   
+    db_name = models.CharField(max_length=100,verbose_name='数据库名',blank=True,null=True)
+    db_host = models.CharField(max_length=100,verbose_name='数据库地址')
+    db_user = models.CharField(max_length=100,verbose_name='用户',blank=True,null=True)
+    db_passwd = models.CharField(max_length=100,verbose_name='密码',blank=True,null=True)
+    db_backup_host = models.CharField(max_length=100,verbose_name='备份数据库地址')
+    db_backup_user = models.CharField(max_length=100,verbose_name='备份数据库账户')
+    db_backup_passwd = models.CharField(max_length=100,verbose_name='备份数据库密码')
+    db_backup_port = models.SmallIntegerField(verbose_name='备份数据库端口')
+    db_port = models.SmallIntegerField(verbose_name='端口')
+    class Meta:
+        db_table = 'opsmanage_inception_server_config'
+        permissions = (
+            ("can_read_inception_server_config", "读取inception信息表权限"),
+            ("can_change_inception_server_config", "更改inception信息表权限"),
+            ("can_add_inception_server_config", "添加inception信息表权限"),
+            ("can_delete_inception_server_config", "删除inception信息表权限"),              
+        )
+        verbose_name = 'inception信息表'  
+        verbose_name_plural = 'inception信息表'        
+
+class DataBase_Server_Config(models.Model):
+    env_type = (
+                ('test',u'测试环境'),
+                ('prod',u'生产环境'),
+                )
+    db_env = models.CharField(choices=env_type,max_length=10,verbose_name='环境类型',default=None)
+    db_name = models.CharField(max_length=100,verbose_name='数据库名')
+    db_host = models.CharField(max_length=100,verbose_name='数据库地址')
+    db_user = models.CharField(max_length=100,verbose_name='用户')
+    db_passwd = models.CharField(max_length=100,verbose_name='密码')
+    db_port = models.SmallIntegerField(verbose_name='端口')
+    db_group = models.SmallIntegerField(verbose_name='使用组')
+    db_service = models.SmallIntegerField(verbose_name='业务类型')
+    db_project = models.SmallIntegerField(verbose_name='所属项目')
+    db_mark =  models.CharField(max_length=100,verbose_name='标识',blank=True,null=True)
+    class Meta:
+        db_table = 'opsmanage_database_server_config'
+        permissions = (
+            ("can_read_database_server_config", "读取数据库信息表权限"),
+            ("can_change_database_server_config", "更改数据库信息表权限"),
+            ("can_add_database_server_config", "添加数据库信息表权限"),
+            ("can_delete_database_server_config", "删除数据库信息表权限"),              
+        )
+        unique_together = (("db_name", "db_host","db_env"))
+        verbose_name = '数据库信息表'  
+        verbose_name_plural = '数据库信息表'
+
+    
+class SQL_Audit_Order(models.Model):
+    statu_type = (
+                  (1,u'待授权'),
+                  (2,u'已执行'),
+                  (3,u'已回滚'),
+                  (4,u'已撤回'),
+                  (6,u'已授权'),
+                  (7,u'已失败'),
+                ) 
+    order_desc = models.CharField(max_length=100,blank=True,null=True,verbose_name='工单用途')
+    order_apply = models.SmallIntegerField(verbose_name='工单申请人id')
+    order_db = models.ForeignKey('DataBase_Server_Config',verbose_name='数据库id')
+    order_sql =  models.TextField(verbose_name='待审核SQL内容') 
+    order_executor = models.SmallIntegerField(verbose_name='工单执行人id')
+    order_status = models.SmallIntegerField(choices=statu_type,default='审核中',verbose_name='工单状态') 
+    order_cancel = models.TextField(blank=True,null=True,verbose_name='取消原因') 
+    create_time = models.DateTimeField(auto_now_add=True,blank=True,null=True,verbose_name='工单发布时间')
+    modify_time = models.DateTimeField(auto_now=True,blank=True,verbose_name='工单最后修改时间')  
+    class Meta:
+        db_table = 'opsmanage_sql_audit_order'
+        permissions = (
+            ("can_read_sql_audit_order", "读取SQL审核工单权限"),
+            ("can_change_sql_audit_order", "更改SQL审核工单权限"),
+            ("can_add_sql_audit_order", "添加SQL审核工单权限"),
+            ("can_delete_sql_audit_order", "删除SQL审核工单权限"),              
+        )
+        verbose_name = 'SQL审核工单表'  
+        verbose_name_plural = 'SQL审核工单表'      
+
+class SQL_Order_Execute_Result(models.Model):
+    '''
+        errlevel: 返回值为非0的情况下，说明是有错的。1表示警告，不影响执行，2表示严重错误，必须修改。
+        stagestatus: 用来表示检查及执行的过程是成功还是失败，如果审核成功，则返回 Audit completed。如果执行成功则返回Execute Successfully，否则返回Execute failed.
+                                                                        如果备份成功，则在后面追加Backup successfully，否则追加Backup failed，这个列的返回信息是为了将结果集直接输出而设置的.
+                            参考文档：http://mysql-inception.github.io/inception-document/results/                                                                
+    '''
+    order = models.ForeignKey('SQL_Audit_Order',verbose_name='orderid')
+    stage = models.CharField(max_length= 20)
+    errlevel = models.IntegerField(verbose_name='错误信息')
+    stagestatus = models.CharField(max_length=40)
+    errormessage = models.TextField(blank=True,null=True,verbose_name='错误信息')
+    sqltext = models.TextField(blank=True,null=True,verbose_name='SQL内容')
+    affectrow = models.IntegerField(blank=True,null=True,verbose_name='影响行数')
+    sequence = models.CharField(max_length=30,db_index=True,verbose_name='序号')
+    backup_db = models.CharField(max_length=100,blank=True,null=True,verbose_name='Inception备份服务器')
+    execute_time = models.CharField(max_length=20,verbose_name='语句执行时间')
+    sqlsha = models.CharField(max_length=50,blank=True,null=True,verbose_name='是否启动OSC')
+    create_time = models.DateTimeField(auto_now_add=True,db_index=True)
+    class Meta:
+        db_table = 'opsmanage_sql_execute_result'
+        verbose_name = 'SQL工单执行记录表'  
+        verbose_name_plural = 'SQL工单执行记录表' 
+
+class SQL_Execute_Histroy(models.Model):
+    exe_user = models.CharField(max_length= 100,verbose_name='执行人')
+    exe_db = models.ForeignKey('DataBase_Server_Config',verbose_name='数据库id')
+    exe_sql =  models.TextField(verbose_name='执行的SQL内容') 
+    exec_status = models.SmallIntegerField(blank=True,null=True,verbose_name='执行状态')
+    exe_result = models.TextField(blank=True,null=True,verbose_name='执行结果') 
+    create_time = models.DateTimeField(auto_now_add=True,blank=True,null=True,verbose_name='执行时间')  
+    class Meta:
+        db_table = 'opsmanage_sql_execute_histroy'
+        permissions = (
+            ("can_read_sql_execute_histroy", "读取SQL执行历史表权限"),
+            ("can_change_sql_execute_histroy", "更改SQL执行历史表权限"),
+            ("can_add_sql_execute_histroy", "添加SQL执行历史表权限"),
+            ("can_delete_sql_execute_histroy", "删除SQL执行历史表权限"),              
+        )
+        verbose_name = 'SQL审核工单表'  
+        verbose_name_plural = 'SQL审核工单表'     
+        
+class Custom_High_Risk_SQL(models.Model):
+    sql = models.CharField(max_length=200,unique=True,verbose_name='SQL内容') 
+    class Meta:
+        db_table = 'opsmanage_custom_high_risk_sql'
+        permissions = (
+            ("can_read_custom_high_risk_sql", "读取高危SQL表权限"),
+            ("can_change_custom_high_risk_sql", "更改高危SQL表权限"),
+            ("can_add_sql_custom_high_risk_sql", "添加高危SQL表权限"),
+            ("can_delete_custom_high_risk_sql", "删除高危SQL表权限"),              
+        )
+        verbose_name = '自定义高危SQL表'  
+        verbose_name_plural = '自定义高危SQL表' 
+        
+        
+class SQL_Audit_Control(models.Model):
+    t_auto_audit = models.SmallIntegerField(blank=True,null=True,verbose_name='测试环境自动授权')
+    t_backup_sql = models.SmallIntegerField(blank=True,null=True,verbose_name='测试环境自动备份SQL')
+    t_email = models.SmallIntegerField(blank=True,null=True,verbose_name='测试环境开启邮件通知')
+    p_auto_audit = models.SmallIntegerField(blank=True,null=True,verbose_name='正式环境自动授权')
+    p_backup_sql = models.SmallIntegerField(blank=True,null=True,verbose_name='正式环境自动备份SQL')
+    p_email = models.SmallIntegerField(blank=True,null=True,verbose_name='正式环境开启邮件通知')
+    audit_group = models.CharField(max_length=100,blank=True,null=True,verbose_name='审核组')
+    class Meta:
+        db_table = 'opsmanage_sql_audit_control'
+        permissions = (
+            ("can_read_sql_audit_control", "读取SQL审核配置表权限"),
+            ("can_change_sql_audit_control", "更改SQL审核配置表权限"),
+            ("can_add_sql_audit_control", "添加SQL审核配置权限"),
+            ("can_delete_sql_audit_control", "删除SQL审核配置权限"),              
+        )
+        verbose_name = 'SQL审核配置'  
+        verbose_name_plural = 'SQL审核配置' 

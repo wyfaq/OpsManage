@@ -16,15 +16,20 @@ Including another URLconf
 
 from django.conf.urls import url,include
 from django.contrib import admin
-from OpsManage.views import index,assets,cron,deploy,ansible,users,wssh
+from OpsManage.views import (index,assets,cron,deploy,
+                             ansible,users,wssh,task,
+                             database)
 from rest_framework.urlpatterns import format_suffix_patterns
+from rest_framework_jwt.views import obtain_jwt_token
 from OpsManage.restfull import (assets_api,cron_api,deploy_api,
-                                ansible_api,users_api,logs_api)
+                                ansible_api,users_api,logs_api,
+                                db_api)
 
 
 urlpatterns = [
     url(r'^$',index.index),
     url(r'^api-auth/', include('rest_framework.urls', namespace='rest_framework')),
+    url(r'^api/token/', obtain_jwt_token),
     url(r'^admin/', admin.site.urls),
     url(r'^login/',index.login),  
     url(r'^logout',index.logout), 
@@ -39,6 +44,9 @@ urlpatterns = [
     url(r'^assets_log/(?P<page>[0-9]+)/$',assets.assets_log),
     url(r'^assets_import/',assets.assets_import),
     url(r'^assets_search/',assets.assets_search),
+    url(r'^assets_server/',assets.assets_server),
+    url(r'^assets/batch/',assets.assets_batch),
+    url(r'^assets/groups/(?P<id>[0-9]+)/$',assets.assets_groups),
     url(r'^cron_add',cron.cron_add),
     url(r'^cron_list/(?P<page>[0-9]+)/$',cron.cron_list),
     url(r'^cron_config',cron.cron_config),
@@ -59,6 +67,10 @@ urlpatterns = [
     url(r'^deploy_manage/(?P<pid>[0-9]+)/$',deploy.deploy_manage),
     url(r'^apps/$',ansible.apps_list),
     url(r'^apps/model/$',ansible.apps_model),
+    url(r'^apps/script/online/$',ansible.apps_script_online),
+    url(r'^apps/script/list/$',ansible.apps_script_list),
+    url(r'^apps/script/file/(?P<pid>[0-9]+)/$',ansible.apps_script_file),
+    url(r'^apps/script/run/(?P<pid>[0-9]+)/$',ansible.apps_script_online_run),
     url(r'^apps/run/$',ansible.ansible_run),
     url(r'^apps/log/$',ansible.ansible_log),
     url(r'^apps/log/(?P<model>[a-z]+)/(?P<id>[0-9]+)/$',ansible.ansible_log_view),
@@ -67,7 +79,20 @@ urlpatterns = [
     url(r'^apps/playbook/file/(?P<pid>[0-9]+)/$',ansible.apps_playbook_file),  
     url(r'^apps/playbook/run/(?P<pid>[0-9]+)/$',ansible.apps_playbook_run),    
     url(r'^apps/playbook/modf/(?P<pid>[0-9]+)/$',ansible.apps_playbook_modf),   
-    url(r'^apps/playbook/online/modf/(?P<pid>[0-9]+)/$',ansible.apps_playbook_online_modf),  
+    url(r'^apps/playbook/online/modf/(?P<pid>[0-9]+)/$',ansible.apps_playbook_online_modf), 
+    url(r'^db/config/$',database.db_config), 
+    url(r'^db/sql/order/audit/$',database.db_sqlorder_audit), 
+    url(r'^db/sql/control/$',database.db_sql_control), 
+    url(r'^db/sql/order/list/(?P<page>[0-9]+)/$',database.db_sqlorder_list),
+    url(r'^db/sql/order/run/(?P<id>[0-9]+)/$',database.db_sqlorder_run),
+    url(r'^db/sql/order/osc/(?P<id>[0-9]+)/$',database.db_sqlorder_osc),
+    url(r'^db/sql/order/search/$',database.db_sqlorder_search),
+    url(r'^db/ops/$',database.db_ops),
+    url(r'^db/sql/dumps/$',database.db_sql_dumps),
+    url(r'^db/sql/logs/(?P<page>[0-9]+)/$',database.db_sql_logs),
+    url(r'^task_model/$',task.task_model),
+    url(r'^task_view/$',task.task_view),
+    url(r'^task_search/$',task.task_search),
     url(r'^users/manage$',users.user_manage),
     url(r'^register/',users.register),
     url(r'^user/(?P<uid>[0-9]+)/$',users.user),
@@ -78,6 +103,8 @@ urlpatterns = [
     url(r'^api/assets/(?P<id>[0-9]+)/$', assets_api.asset_detail),
     url(r'^api/service/$', assets_api.service_list), 
     url(r'^api/service/(?P<id>[0-9]+)/$', assets_api.service_detail), 
+    url(r'^api/project/$', assets_api.project_list), 
+    url(r'^api/project/(?P<id>[0-9]+)/$', assets_api.project_detail),     
     url(r'^api/group/$', assets_api.group_list), 
     url(r'^api/group/(?P<id>[0-9]+)/$',assets_api.group_detail), 
     url(r'^api/user/$', users_api.user_list), 
@@ -106,6 +133,14 @@ urlpatterns = [
     url(r'^api/logs/deploy/(?P<id>[0-9]+)/$', deploy_api.deployLogs_detail),
     url(r'^api/logs/search/model/$', logs_api.AnsibleModelLogsList),
     url(r'^api/logs/search/playbook/$', logs_api.AnsiblePlayBookLogsList),
+    url(r'^api/logs/sql/(?P<id>[0-9]+)/$', db_api.sql_exec_logs),
+    url(r'^api/inc/config/$', db_api.inc_list),
+    url(r'^api/inc/config/(?P<id>[0-9]+)/$', db_api.inc_detail),
+    url(r'^api/db/config/$', db_api.db_list),
+    url(r'^api/db/config/(?P<id>[0-9]+)/$', db_api.db_detail),
+    url(r'^api/sql/order/(?P<id>[0-9]+)/$', db_api.sql_order_detail),
+    url(r'^api/sql/custom/$', db_api.sql_custom_list),
+    url(r'^api/sql/custom/(?P<id>[0-9]+)/$', db_api.sql_custom_detail),
     url(r'^webssh/(?P<sid>[0-9]+)/$',wssh.wssh),
 ]
 

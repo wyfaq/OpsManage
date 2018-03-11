@@ -27,7 +27,9 @@
 													{% if asset_main.assets_type == "server" %}
 														 <input type="text" class="form-control"  value="服务器" class="input-xlarge"  disabled/>
 													{% elif asset_main.assets_type == "switch" %}
-														 <input type="text" class="form-control"  value="交换机" class="input-xlarge"  disabled/>							         				
+														 <input type="text" class="form-control"  value="交换机" class="input-xlarge"  disabled/>		
+													{% elif asset_main.assets_type == "vmser" %}
+														 <input type="text" class="form-control"  value="虚拟机" class="input-xlarge"  disabled/>															 					         				
 													{% elif asset_main.assets_type == "route" %}
 														 <input type="text" class="form-control"  value="路由器" class="input-xlarge"  disabled/>
 													{% elif asset_main.assets_type == "printer" %}
@@ -52,7 +54,7 @@
 												 	<input type="text" class="form-control"  placeholder="编号" name="asset_name" value="{{ asset_main.name|default:"" }}" class="input-xlarge"  disabled/>
 												 </div>
 											</div>
-											
+											{% if asset_main.assets_type == "server" %}
 											<div class="form-group">
 												 <label class="col-sm-2 control-label">设备序列号</label>
 												 <div class="col-sm-6">
@@ -77,7 +79,15 @@
 											<div class="form-group">
 												 <label class="col-sm-2 control-label">购买人</label>
 												 <div class="col-sm-6">
-												 	<input type="text" class="form-control" name="asset_buy_user" placeholder="购买人" value="{{ asset_main.buy_user|default:"" }}" class="input-xlarge"  required/>
+												   <select class="form-control" name="asset_buy_user"  required>
+														{% for user in userList %}
+															{% if asset_main.buy_user == user.id %}
+																<option selected="selected" value="{{user.id}}" name="asset_buy_user">{{user.username}}</option>
+															{% else %}
+																<option value="{{user.id}}" name="asset_buy_user">{{user.username}}</option>	
+															{% endif %}
+														{% endfor %}			   		
+													</select>	
 												 </div>
 											</div>	
 											
@@ -108,7 +118,7 @@
 												 	<input type="text" class="form-control" name="asset_provider" placeholder="供货商" value="{{ asset_main.provider|default:"" }}" class="input-xlarge"  required/>
 												 </div>
 											</div>													
-													
+											{% endif %}		
 											<div class="form-group">
 												 <label class="col-sm-2 control-label">设备状态</label>
 												 <div class="col-sm-6">
@@ -177,14 +187,29 @@
 														{% endfor %}						   																						
 													</select>
 												 </div>
-											</div>																	
+											</div>	
+											
+											<div class="form-group">
+												 <label class="col-sm-2 control-label">所属项目</label>
+												 <div class="col-sm-6">
+												   <select class="form-control" name="asset_project" id="asset_project"  onchange="javascript:oBtProjectSelect();">
+														{% for s in assets_data.project %}
+															{% if s.id == asset_main.project %}
+																<option value="{{s.id}}" name="asset_project" selected="selected" >{{s.project_name|default:""}}</option>
+															{% else %}
+																<option value="{{s.id}}" name="asset_project">{{s.project_name|default:""}}</option>
+															{% endif %}										
+														{% endfor %}							   						   					
+													</select>
+												 </div>
+											</div>																											
 														
 											<div class="form-group">
 												 <label class="col-sm-2 control-label">业务类型</label>
 												 <div class="col-sm-6">
-												   <select class="form-control" name="asset_business"  >
+												   <select class="form-control" name="asset_business"  id="asset_business">
 														{% for s in assets_data.service %}
-															{% if s.id == asset_main.business %}
+															{% if s.id == asset_main.business and s.project.id == asset_main.project %}
 																<option value="{{s.id}}" name="asset_business" selected="selected" >{{s.service_name|default:""}}</option>
 															{% else %}
 																<option value="{{s.id}}" name="asset_business">{{s.service_name|default:""}}</option>
@@ -196,7 +221,7 @@
 											
 											</fieldset>
 											<fieldset>		
-											{% if asset_type == "server" %}
+											{% if asset_type == "server" or asset_type == "vmser" %}
 											<div id="asset_server_chioce" >					
 											<legend>服务器设备资产信息修改 - 可选信息</legend>
 					
@@ -441,6 +466,31 @@
 <script type="text/javascript">
 $(function () { $("[data-toggle='tooltip']").tooltip(); });
 
+
+function oBtProjectSelect(){
+	   $('#asset_business option:selected').empty();
+	   var dbId = $('#asset_project option:selected').val();
+	   if ( dbId.length > 0){	 
+			$.ajax({
+				dataType: "JSON",
+				url:'/api/project/'+ dbId + '/', //请求地址
+				type:"GET",  //提交类似
+				success:function(response){
+					var binlogHtml = '<select class="form-control" name="asset_business" id="asset_business" >'
+					var selectHtml = '';
+					for (var i=0; i <response["service_assets"].length; i++){
+						 selectHtml += '<option name="asset_business" value="'+ response["service_assets"][i]["id"] +'">' + response["service_assets"][i]["service_name"] + '</option>' 
+					};                        
+					binlogHtml =  binlogHtml + selectHtml + '</select>';
+					document.getElementById("asset_business").innerHTML= binlogHtml;	
+						
+				},
+			});	
+	   };
+}
+
+
+
 function addAssetsData(obj) {
 	var form = document.getElementById('addHost');
 	for (var i = 0; i < form.length; ++i) {
@@ -456,7 +506,7 @@ function addAssetsData(obj) {
 	var asset_data = getFormData(document.getElementById('addHost'),'');
 // 	alert(JSON.stringify(asset_data));  
 	var btnObj = $(obj);
-	if ("{{ asset_type }}"=="server"){
+	if ("{{ asset_type }}"=="server" || "{{ asset_type }}"=="vmser"){
 		var putUrl = '/api/server/{{ asset_body.id }}/';
 	}
 	else {
@@ -539,7 +589,7 @@ function getFormData (form, filler) {
 		}
 		
 	}
-	if ("{{ asset_type }}" == "server"){
+	if ("{{ asset_type }}" == "server" || "{{ asset_type }}" == "vmser"){
 		server.assets = assets;
 		return server;		
 	}

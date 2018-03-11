@@ -1,4 +1,9 @@
 {% extends 'index.html' %}
+{% block ace-content %}
+<!-- bootstrap-notify -->   
+<script type="text/javascript" src="/static/dist/js/bootstrap-notify.js"></script>
+<script type="text/javascript" src="/static/js/reconnecting-websocket.js"></script>
+{% endblock %}
 {% block page-content %}
 <div id="page-wrapper">
     <div class="row">
@@ -57,7 +62,7 @@
 												         	{% endif %} 
 												         	</td> 
 				                                			<td class="text-center">
-				                                				{{ds.order_project.project_name}} 
+				                                				{{ds.order_project.project.project_name}} 
 				                                			</td>
 				                                			<td class="text-center">
 				                                				{% if ds.order_comid %}
@@ -142,9 +147,9 @@
 													       <th class="text-center">资产编号</th>
 													       <th class="text-center">设备型号</th>
 													       <th class="text-center">放置区域</th>
-													       <th class="text-center">购买人</th>
-													       <th class="text-center">购买时间</th>
 													       <th class="text-center">业务类型</th>
+													       <th class="text-center">使用组</th>
+													       <th class="text-center">购买时间</th>									       
 													       <th class="text-center">设备状态</th>
 													       <th class="text-center">操作</th>
 													    </tr>
@@ -155,6 +160,8 @@
 													         <td class="text-center">	
 													         		{% if a.assets_type == "server" %}
 													         			<button  type="button" class="btn btn-default disabled">服务器</button>
+																	{% elif a.assets_type == "vmser" %}
+									         							<button  type="button" class="btn btn-default disabled">虚拟机</button>													         			
 													         		{% elif a.assets_type == "switch" %}
 													         			<button  type="button" class="btn btn-default disabled">交换机</button>	
 													         		{% elif a.assets_type == "route" %}
@@ -171,9 +178,15 @@
 													         			<button  type="button" class="btn btn-default disabled">无线设备</button>									         													         												         												         											         												         			
 													         		{% endif %}
 													         </td>
-													         <td class="text-center">{{ a.management_ip }}</td>
+													         <td class="text-center">
+													         	{% if a.management_ip %}
+													         		{{ a.management_ip }}
+													         	{% else %}
+													         		{{ a.server_assets.ip }}
+													         	{% endif %}													         
+													         </td>
 													         <td class="text-center">{{ a.name }}</td>
-													         <td class="text-center">{{ a.model }}</td>
+													         <td class="text-center">{{ a.model|default:"无" }}</td>
 													         <td class="text-center">
 													         	{% for z in baseAssets.zone %}
 													         		{% if z.id == a.put_zone %}
@@ -181,14 +194,26 @@
 													         		{% endif %}
 													         	{% endfor %}
 													         </td>
-													         <td class="text-center">{{ a.buy_user }}</td>
-													         <td class="text-center">{{ a.buy_time|date:"Y/m/d" }}</td>
 													         <td class="text-center">
 													         	{% for s in baseAssets.service %}
 													         		{% if s.id == a.business %}
 													         			<button  type="button" class="btn btn-default disabled">{{ s.service_name }}</button>	
 													         		{% endif %}
-													         	{% endfor %}								         		
+													         	{% endfor %}													         
+													         </td>
+													         <td class="text-center">
+													         	{% for g in baseAssets.group %}
+													         		{% if g.id == a.put_zone %}
+													         			{{ g.name }}
+													         		{% endif %}
+													         	{% endfor %}													         
+													         </td>
+													         <td class="text-center">
+													         	{% if a.buy_time %}
+													         		{{ a.buy_time|date:"Y/m/d" }}
+													         	{% else %}
+													         		{{ a.create_date|date:"Y/m/d" }}
+													         	{% endif %}									         		
 													         </td>
 													         <td class="text-center">
 													         		{% if a.status == 0 %}
@@ -340,7 +365,7 @@
 					onOk: function(){
 						$.ajax({
 							  type: 'POST',
-							  url: '/deploy_order/',
+							  url: '/deploy_order/' + id + '/',
 							  data: {
 								  "id":id,
 								  "model":model,
@@ -349,14 +374,16 @@
 						      success:function(response){			            
 					                if (response["code"]=="200"){ 
 					                	window.wxc.xcConfirm(response["msg"], window.wxc.xcConfirm.typeEnum.success);
+					                	location.reload();
 					                }
 						        	else{
 						        		window.wxc.xcConfirm(response["msg"], window.wxc.xcConfirm.typeEnum.error);
-						        	}			                
+						        	}	
+					                
 							},
 				            error:function(response){
 				            	window.wxc.xcConfirm("请求数据错误！", window.wxc.xcConfirm.typeEnum.error);
-				            },							  
+				            },
 							});
 					},
 					onCancel:function(){	
@@ -402,5 +429,28 @@
 			}
 	   }	  
 </script>
-
+	{% if config.email == 1 %}
+	<audio id="notifySound"><source src="/static/misc/hx.mp3" type="audio/mp3"> </audio>
+	<script type="application/javascript">
+	    var ws_scheme = window.location.protocol == "https:" ? "wss" : "ws";
+	    var ws = new ReconnectingWebSocket(ws_scheme + '://' + window.location.host + "/ws/notice/{{user}}/",null, {debug: true, reconnectInterval: 3000} ); 
+	    ws.onmessage = function (message) {
+	        var data = JSON.parse(message.data);
+	        console.log(data)
+	        $('#notifySound')[0].play();
+			$.notify({
+				title: "<strong>"+ data['title'] +"</strong>",
+				message: data['messages']
+			},
+			{
+				type: data['type'],
+				url_target: '_blank',
+				delay: 3600000
+			});	
+	    }
+	    ws.onclose = function(){
+	        console.log('closed....');
+	    };
+	</script>
+	{% endif %}
 {% endblock %}

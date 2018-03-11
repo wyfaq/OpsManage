@@ -30,6 +30,7 @@
 									 <select class="form-control" id="selAssetsType" >
 									 		<option selected="selected" value="">请选择一个类型</option>
 											<option value="server" name="assets_type">服务器</option>
+											<option value="vmser" name="assets_type">虚拟机</option>	
 											<option value="switch" name="assets_type">交换机</option>	
 											<option value="route" name="assets_type">路由器</option>	
 											<option value="printer" name="assets_type">打印机</option>	
@@ -119,7 +120,7 @@
 									 <select class="form-control" id="selBuyUser" >
 									 	<option selected="selected" value="">请选择一个类型</option>
 									 	{% for b in buyUserList %}
-									 		<option value="{{b}}" name="buy_user">{{b}}</option>
+									 		<option value="{{b.id}}" name="buy_user">{{b.username}}</option>
 									 	{% endfor %}										 				
 									</select>
 								</div>
@@ -217,12 +218,12 @@
 				      </div>
 				      <div class="col-xs-6 col-sm-3">
 							<div class="form-group">
-								<label class="col-sm-3 control-label">Selinux:</label>
+								<label class="col-sm-3 control-label">所属项目:</label>
 								<div class="col-sm-8">
-									 <select class="form-control" id="selSelinux" >
+									 <select class="form-control" id="selProject" >
 									 	<option selected="selected" value="">请选择一个类型</option>
-									 	{% for b in selinuxList %}
-									 		<option value="{{b}}" name="selinux">{{b}}</option>
+									 	{% for b in baseAssets.project %}
+									 		<option value="{{b.id}}" name="project">{{b.project_name}}</option>
 									 	{% endfor %}				
 									</select>
 								</div>
@@ -372,29 +373,33 @@
 							<table   width="100%" class="table table-striped table-bordered table-hover dataTable no-footer" id="dataTables-Search">						
 	                                <thead>
 										  <tr>
-										       <th>资产类型</th>
-										       <th>管理IP</th>
-										       <th>资产编号</th>
-										       <th>设备型号</th>
-										       <th>放置区域</th>
-										       <th>购买人</th>
-										       <th>购买时间</th>
-										       <th>业务类型</th>
-										       <th>设备状态</th>
-										       <th>操作</th>
+										  	   <th class="text-center">资产id</th>
+										       <th class="text-center">资产类型</th>
+										       <th class="text-center">管理IP</th>
+										       <th class="text-center">资产编号</th>
+										       <th class="text-center">设备型号</th>
+										       <th class="text-center">放置区域</th>
+										       <th class="text-center">所属项目</th>
+										       <th class="text-center">业务类型</th>
+										       <th class="text-center">使用组</th>
+										       <th class="text-center">购买时间</th>
+										       <th class="text-center">设备状态</th>
+										       <th class="text-center">操作</th>
 										    </tr>
 									        <tfoot>
 									            <tr>
-											       <th>资产类型</th>
-											       <th>管理IP</th>
-											       <th>资产编号</th>
-											       <th>设备型号</th>
-											       <th>放置区域</th>
-											       <th>购买人</th>
-											       <th>购买时间</th>
-											       <th>业务类型</th>
-											       <th>设备状态</th>
-											       <th>操作</th>
+									               <th class="text-center">资产id</th>
+											       <th class="text-center">资产类型</th>
+											       <th class="text-center">管理IP</th>
+											       <th class="text-center">资产编号</th>
+											       <th class="text-center">设备型号</th>
+											       <th class="text-center">放置区域</th>
+											       <th class="text-center">所属项目</th>
+											       <th class="text-center">业务类型</th>
+											       <th class="text-center">使用组</th>
+											       <th class="text-center">购买时间</th>
+											       <th class="text-center">设备状态</th>
+											       <th class="text-center">操作</th>
 									            </tr>
 									        </tfoot>										    
 	                                </thead>
@@ -919,20 +924,20 @@
                     changepage(1);
                 }
             })   
-			//selinux状态
-            $('#selSelinux').change(function () {
-                if ($('#selSelinux').val() != "") {
-                    $("#hdnSelinux").val($('#selSelinux').val());
-                    var span = "<span class='label label-success' id='spanSelinux'>" + $("#selSelinux").find("option:selected").text()
-                    + " <img alt='' src='/static/img/close.png' onclick='removeself(this)' /><input name='selinux' type='hidden' value='"
-                    + $('#selSelinux').val() + "' /></span> &nbsp;";
+			//所属项目
+            $('#selProject').change(function () {
+                if ($('#selProject').val() != "") {
+                    $("#hdnProject").val($('#selProject').val());
+                    var span = "<span class='label label-success' id='spanSelinux'>" + $("#selProject").find("option:selected").text()
+                    + " <img alt='' src='/static/img/close.png' onclick='removeself(this)' /><input name='project' type='hidden' value='"
+                    + $('#selProject').val() + "' /></span> &nbsp;";
                     if ($("#spanSelinux").length == 0) {
                         $('#divSelectedType').append(span);
                     }
                     else {
-                        $("#spanSelinux").html($("#selSelinux").find("option:selected").text()
-                         + " <img alt='' src='/static/img/close.png' onclick='removeself(this)' /><input name='selinux' type='hidden' value='"
-                         + $('#selSelinux').val() + "' /></span> &nbsp;");
+                        $("#spanSelinux").html($("#selProject").find("option:selected").text()
+                         + " <img alt='' src='/static/img/close.png' onclick='removeself(this)' /><input name='project' type='hidden' value='"
+                         + $('#selProject').val() + "' /></span> &nbsp;");
                     }
                     changepage(1);
                 }
